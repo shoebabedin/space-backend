@@ -2,25 +2,9 @@ const express = require("express");
 const multer = require("multer");
 const route = express.Router();
 const db = require("../../config/dbConnection");
-const path = require("path");
+const upload = require("../../middlewear/imageUploader");
 
-// Use of Multers
-var storage = multer.diskStorage({
-    destination: (req, file, callBack) => {
-      callBack(null, "public/uploads/"); // 'uploads/' directory name where save the file
-    },
-    filename: (req, file, callBack) => {
-      callBack(
-        null,
-        file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-      );
-    }
-  });
-  
-  var upload = multer({
-    storage: storage
-  });
-  
+
 
 // create People
 route.post("/createpeople", upload.single("file"), async (req, res) => {

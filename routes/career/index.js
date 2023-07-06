@@ -35,8 +35,6 @@ route.post("/createcareer", upload.single("file"), async (req, res) => {
       req.body.salary
     ];
   
-  
-  
       const sql = `INSERT INTO careers (title, vacancy, context, responsibilities, education, requirement, salary) VALUES (?)`;
   
       db.query(sql, [addData], function (err, result) {
