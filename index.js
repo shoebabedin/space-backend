@@ -23,21 +23,21 @@ app.use(routes)
 const port = 5000;
 
 // Use of Multers
-var storage = multer.diskStorage({
-  destination: (req, file, callBack) => {
-    callBack(null, "public/uploads/"); // 'uploads/' directory name where save the file
-  },
-  filename: (req, file, callBack) => {
-    callBack(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
-  }
-});
+// var storage = multer.diskStorage({
+//   destination: (req, file, callBack) => {
+//     callBack(null, "public/uploads/"); // 'uploads/' directory name where save the file
+//   },
+//   filename: (req, file, callBack) => {
+//     callBack(
+//       null,
+//       file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+//     );
+//   }
+// });
 
-var upload = multer({
-  storage: storage
-});
+// var upload = multer({
+//   storage: storage
+// });
 
 // user all get
 // app.get("/viewuser", (req, res) => {
@@ -197,196 +197,196 @@ var upload = multer({
 // Blog
 
 // all blog
-app.get("/blog", (req, res) => {
-  const sql = `SELECT * FROM blogs`;
+// app.get("/blog", (req, res) => {
+//   const sql = `SELECT * FROM blogs`;
 
-  db.query(sql, (err, result) => {
-    if (err) throw err;
-    res.json(result);
-  });
-});
+//   db.query(sql, (err, result) => {
+//     if (err) throw err;
+//     res.json(result);
+//   });
+// });
 
 // create blog
-app.post("/createblog", upload.array("files"), async (req, res) => {
-  const imgsrc = JSON.stringify(req.files.map((file) => file.filename));
+// app.post("/createblog", upload.array("files"), async (req, res) => {
+//   const imgsrc = JSON.stringify(req.files.map((file) => file.filename));
 
-  const addData = [req.body.title, req.body.content, imgsrc];
+//   const addData = [req.body.title, req.body.content, imgsrc];
 
-  if (!req.files) {
-    console.log("No file upload");
-  } else {
-    const sql = `INSERT INTO blogs (title, content, blog_Img) VALUES (?)`;
+//   if (!req.files) {
+//     console.log("No file upload");
+//   } else {
+//     const sql = `INSERT INTO blogs (title, content, blog_Img) VALUES (?)`;
 
-    db.query(sql, [addData], function (err, result) {
-      if (err) throw err;
-      res.json(result);
-      console.log("file uploaded");
-    });
-  }
-});
+//     db.query(sql, [addData], function (err, result) {
+//       if (err) throw err;
+//       res.json(result);
+//       console.log("file uploaded");
+//     });
+//   }
+// });
 
 // Edit blog
-app.post("/updateblog/:id", upload.array("files"), (req, res) => {
-  const imgsrc = JSON.stringify(req.files.map((file) => file.filename));
-  const addData = [req.body.title, req.body.content, imgsrc];
+// app.post("/updateblog/:id", upload.array("files"), (req, res) => {
+//   const imgsrc = JSON.stringify(req.files.map((file) => file.filename));
+//   const addData = [req.body.title, req.body.content, imgsrc];
 
-  if (!req.files) {
-    console.log("No file upload");
-  } else {
-    // const sql = `INSERT INTO blogs (title, content, blog_Img) VALUES (?)`;
-    const sql = `UPDATE blogs SET title = '${req.body.title}', content = '${req.body.content}', blog_Img = '${imgsrc}' WHERE id = ${req.params.id}`;
+//   if (!req.files) {
+//     console.log("No file upload");
+//   } else {
+//     // const sql = `INSERT INTO blogs (title, content, blog_Img) VALUES (?)`;
+//     const sql = `UPDATE blogs SET title = '${req.body.title}', content = '${req.body.content}', blog_Img = '${imgsrc}' WHERE id = ${req.params.id}`;
 
-    db.query(sql, [addData], function (err, result) {
-      if (err) throw err;
-      res.json(result);
-      console.log("file uploaded");
-    });
-  }
-});
+//     db.query(sql, [addData], function (err, result) {
+//       if (err) throw err;
+//       res.json(result);
+//       console.log("file uploaded");
+//     });
+//   }
+// });
 
 // Delete blog
-app.post("/deleteblog/:id", (req, res) => {
-  const sql = `DELETE FROM blogs WHERE id = ${req.params.id}`;
+// app.post("/deleteblog/:id", (req, res) => {
+//   const sql = `DELETE FROM blogs WHERE id = ${req.params.id}`;
 
-  db.query(sql, function (err, result) {
-    if (err) throw err;
-    res.json(result);
-  });
-});
+//   db.query(sql, function (err, result) {
+//     if (err) throw err;
+//     res.json(result);
+//   });
+// });
 
 
 // People
 // create People
-app.post("/createpeople", upload.single("file"), async (req, res) => {
+// app.post("/createpeople", upload.single("file"), async (req, res) => {
 
-  const addData = [
-    req.body.name,
-    req.body.designation,
-    req.file.filename
-  ];
+//   const addData = [
+//     req.body.name,
+//     req.body.designation,
+//     req.file.filename
+//   ];
 
 
-  if (!req.file) {
-    console.log("No file upload");
-  } else {
-    const sql = `INSERT INTO people (name, designation, image) VALUES (?)`;
+//   if (!req.file) {
+//     console.log("No file upload");
+//   } else {
+//     const sql = `INSERT INTO people (name, designation, image) VALUES (?)`;
 
-    db.query(sql, [addData], function (err, result) {
-      if (err) throw err;
-      res.json(result);
-      console.log("file uploaded");
-    });
-  }
-});
+//     db.query(sql, [addData], function (err, result) {
+//       if (err) throw err;
+//       res.json(result);
+//       console.log("file uploaded");
+//     });
+//   }
+// });
 
 // all People
-app.get("/people", (req, res) => {
-  const sql = `SELECT * FROM people`;
+// app.get("/people", (req, res) => {
+//   const sql = `SELECT * FROM people`;
 
-  db.query(sql, (err, result) => {
-    if (err) throw err;
-    res.json(result);
-  });
-});
+//   db.query(sql, (err, result) => {
+//     if (err) throw err;
+//     res.json(result);
+//   });
+// });
 
 // Edit People
-app.post("/updatepeople/:id", upload.single("file"), async(req, res) => {
+// app.post("/updatepeople/:id", upload.single("file"), async(req, res) => {
 
-  const addData = [
-    req.body.name,
-    req.body.designation,
-    req.body.file || req.file.filename
-  ];
+//   const addData = [
+//     req.body.name,
+//     req.body.designation,
+//     req.body.file || req.file.filename
+//   ];
   
-    const sql = `UPDATE people SET name='${req.body.name}', designation='${req.body.designation}', image='${req.body.file || req.file.filename}' WHERE id = ${req.params.id}`;
-    db.query(sql, [addData], function (err, result) {
-      if (err) throw err;
-      res.json(result);
-      console.log(result);
-      console.log("file uploaded");
-    });
+//     const sql = `UPDATE people SET name='${req.body.name}', designation='${req.body.designation}', image='${req.body.file || req.file.filename}' WHERE id = ${req.params.id}`;
+//     db.query(sql, [addData], function (err, result) {
+//       if (err) throw err;
+//       res.json(result);
+//       console.log(result);
+//       console.log("file uploaded");
+//     });
 
-});
+// });
 
 // Delete People
-app.post("/deletepeople/:id", (req, res) => {
-  const sql = `DELETE FROM people WHERE id = ${req.params.id}`;
+// app.post("/deletepeople/:id", (req, res) => {
+//   const sql = `DELETE FROM people WHERE id = ${req.params.id}`;
 
-  db.query(sql, function (err, result) {
-    if (err) throw err;
-    res.json(result);
-  });
-});
+//   db.query(sql, function (err, result) {
+//     if (err) throw err;
+//     res.json(result);
+//   });
+// });
 
 
 // Career
 // create Career
-app.post("/createcareer", upload.single("file"), async (req, res) => {
+// app.post("/createcareer", upload.single("file"), async (req, res) => {
 
-  const addData = [
-    req.body.title,
-    req.body.vacancy,
-    req.body.context,
-    req.body.responsibilities,
-    req.body.education,
-    req.body.requirement,
-    req.body.salary
-  ];
+//   const addData = [
+//     req.body.title,
+//     req.body.vacancy,
+//     req.body.context,
+//     req.body.responsibilities,
+//     req.body.education,
+//     req.body.requirement,
+//     req.body.salary
+//   ];
 
 
 
-    const sql = `INSERT INTO careers (title, vacancy, context, responsibilities, education, requirement, salary) VALUES (?)`;
+//     const sql = `INSERT INTO careers (title, vacancy, context, responsibilities, education, requirement, salary) VALUES (?)`;
 
-    db.query(sql, [addData], function (err, result) {
-      if (err) throw err;
-      res.json(result);
-      console.log("file uploaded");
-    });
+//     db.query(sql, [addData], function (err, result) {
+//       if (err) throw err;
+//       res.json(result);
+//       console.log("file uploaded");
+//     });
   
-});
+// });
 
 // all Career
-app.get("/career", (req, res) => {
-  const sql = `SELECT * FROM careers`;
+// app.get("/career", (req, res) => {
+//   const sql = `SELECT * FROM careers`;
 
-  db.query(sql, (err, result) => {
-    if (err) throw err;
-    res.json(result);
-  });
-});
+//   db.query(sql, (err, result) => {
+//     if (err) throw err;
+//     res.json(result);
+//   });
+// });
 
 // Edit Career
-app.post("/updatecareer/:id", upload.single("file"), async(req, res) => {
+// app.post("/updatecareer/:id", upload.single("file"), async(req, res) => {
 
-  const addData = [
-    req.body.title,
-    req.body.vacancy,
-    req.body.context,
-    req.body.responsibilities,
-    req.body.education,
-    req.body.requirement,
-    req.body.salary
-  ];
+//   const addData = [
+//     req.body.title,
+//     req.body.vacancy,
+//     req.body.context,
+//     req.body.responsibilities,
+//     req.body.education,
+//     req.body.requirement,
+//     req.body.salary
+//   ];
   
-    const sql = `UPDATE careers SET title='${req.body.title}', vacancy='${req.body.vacancy}', context='${req.body.context}', responsibilities='${req.body.responsibilities}', education='${req.body.education}', requirement='${req.body.requirement}', salary='${req.body.salary}' WHERE id = ${req.params.id}`;
-    db.query(sql, [addData], function (err, result) {
-      if (err) throw err;
-      res.json(result);
-      console.log(result);
-      console.log("file uploaded");
-    });
+//     const sql = `UPDATE careers SET title='${req.body.title}', vacancy='${req.body.vacancy}', context='${req.body.context}', responsibilities='${req.body.responsibilities}', education='${req.body.education}', requirement='${req.body.requirement}', salary='${req.body.salary}' WHERE id = ${req.params.id}`;
+//     db.query(sql, [addData], function (err, result) {
+//       if (err) throw err;
+//       res.json(result);
+//       console.log(result);
+//       console.log("file uploaded");
+//     });
 
-});
+// });
 
 // Delete Career
-app.post("/deletecareer/:id", (req, res) => {
-  const sql = `DELETE FROM careers WHERE id = ${req.params.id}`;
+// app.post("/deletecareer/:id", (req, res) => {
+//   const sql = `DELETE FROM careers WHERE id = ${req.params.id}`;
 
-  db.query(sql, function (err, result) {
-    if (err) throw err;
-    res.json(result);
-  });
-});
+//   db.query(sql, function (err, result) {
+//     if (err) throw err;
+//     res.json(result);
+//   });
+// });
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
