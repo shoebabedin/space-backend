@@ -1,96 +1,95 @@
 const express = require("express");
 const multer = require("multer");
-const db = require("../../config/dbConnection");
 const route = express.Router();
-const path = require("path");
+const upload = require("../../middlewear/imageUploader");
+const Career = require("../../models/Career");
 
-// Use of Multers
-var storage = multer.diskStorage({
-    destination: (req, file, callBack) => {
-      callBack(null, "public/uploads/"); // 'uploads/' directory name where save the file
-    },
-    filename: (req, file, callBack) => {
-      callBack(
-        null,
-        file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-      );
-    }
+// all Career
+route.get("/career",async (req, res) => {
+  const peopleData = await Career.findAll()
+  .then((data) => {
+    res.status(201).json({ message: "Career data get successfully", data });
+  })
+  .catch((error) => {
+    console.log("Error getting", error);
   });
-  
-  var upload = multer({
-    storage: storage
-  });
-  
 
+});
 // create Career
-route.post("/createcareer", upload.single("file"), async (req, res) => {
+route.post("/createcareer",upload.single('file'), async (req, res) => {
+  const { title, vacancy, description, education, salary } = req.body;
 
-    const addData = [
-      req.body.title,
-      req.body.vacancy,
-      req.body.context,
-      req.body.responsibilities,
-      req.body.education,
-      req.body.requirement,
-      req.body.salary
-    ];
-  
-      const sql = `INSERT INTO careers (title, vacancy, context, responsibilities, education, requirement, salary) VALUES (?)`;
-  
-      db.query(sql, [addData], function (err, result) {
-        if (err) throw err;
-        res.json(result);
-        console.log("file uploaded");
-      });
-    
-  });
-  
-  // all Career
-  route.get("/career", (req, res) => {
-    const sql = `SELECT * FROM careers`;
-  
-    db.query(sql, (err, result) => {
-      if (err) throw err;
-      res.json(result);
+  try {
+    const data = await Career.create({
+      title,
+      vacancy,
+      description,
+      education,
+      salary
     });
-  });
-  
-  // Edit Career
-  route.post("/updatecareer/:id", upload.single("file"), async(req, res) => {
-  
-    const addData = [
-      req.body.title,
-      req.body.vacancy,
-      req.body.context,
-      req.body.responsibilities,
-      req.body.education,
-      req.body.requirement,
-      req.body.salary
-    ];
-    
-      const sql = `UPDATE careers SET title='${req.body.title}', vacancy='${req.body.vacancy}', context='${req.body.context}', responsibilities='${req.body.responsibilities}', education='${req.body.education}', requirement='${req.body.requirement}', salary='${req.body.salary}' WHERE id = ${req.params.id}`;
-      db.query(sql, [addData], function (err, result) {
-        if (err) throw err;
-        res.json(result);
-        console.log(result);
-        console.log("file uploaded");
+    res.status(201).json({ message: "Career Created successfully", data });
+  } catch (error) {
+    console.error("Error creating Career entry:", error);
+    res.status(500).json({ error: "Failed to create Career entry" });
+  }
+});
+
+
+// Edit Career
+route.post("/updatecareer/",upload.single('file'), async (req, res) => {
+  const { id, title, vacancy, description, education, salary } = req.body;
+    try {
+      const [updatedRows, updatedData] = await Career.update(
+        {
+          title,
+          vacancy,
+          description,
+          education,
+          salary
+        },
+        {
+          where: { id: id }
+        }
+      );
+
+      if (updatedRows > 0) {
+        console.log("Update successful:", updatedData);
+        console.log("People Updated:", updatedData);
+      } else {
+        console.log("No records were updated.");
+      }
+
+      res.status(201).json({
+        message: "People Updated successfully",
+        updateHome: updatedData
       });
-  
-  });
-  
-  // Delete Career
-  route.post("/deletecareer/:id", (req, res) => {
-    const sql = `DELETE FROM careers WHERE id = ${req.params.id}`;
-  
-    db.query(sql, function (err, result) {
-      if (err) throw err;
-      res.json(result);
+    } catch (error) {
+      console.error("Error updating People entry:", error);
+      res.status(500).json({ error: "Failed to update People entry" });
+    }
+});
+
+// Delete Career
+route.post("/deletecareer/", async(req, res) => {
+  try {
+    const { id } = req.body; // Make sure id is sent as { id: yourIdValue }
+    
+    // Use the id in the where condition
+    const data = await Career.destroy({
+      where: { id : id }
     });
-  });
 
+    if (data > 0) {
+      console.log(`Record with id ${id} deleted successfully.`);
+      res.status(200).json({ message: `Record with id ${id} deleted successfully.` });
+    } else {
+      console.log(`No record found with id ${id}. Nothing deleted.`);
+      res.status(404).json({ error: `No record found with id ${id}. Nothing deleted.` });
+    }
+  } catch (error) {
+    console.error('Error deleting record:', error);
+    res.status(500).json({ error: 'Failed to delete record.' });
+  }
+});
 
-
-
-
-
-  module.exports = route;
+module.exports = route;

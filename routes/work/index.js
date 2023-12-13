@@ -1,71 +1,110 @@
 const express = require("express");
 const multer = require("multer");
 const route = express.Router();
-const db = require("../../config/dbConnection");
+// const db = require("../../config/connection");
 const path = require("path");
 const upload = require("../../middlewear/imageUploader");
+const Work = require("../../models/Work");
+
+// get all work
+route.get("/work", async (req, res) => {
+  const homeData = await Work.findAll()
+    .then((works) => {
+      res.status(201).json({ message: "Home data get successfully", works });
+    })
+    .catch((error) => {
+      console.log("Error getting", error);
+    });
+});
 
 // create work
-route.post("/creatework", upload.array("files"), async (req, res) => {
-  const imgsrc = JSON.stringify(req.files.map((file) => file.filename));
+route.post(
+  "/creatework",
+  upload.fields([{ name: "files" }]),
+  async (req, res) => {
+    const { title, content } = req.body;
+    const files = req.files;
+    try {
+      const multipleImg = Array.isArray(files["files"])
+        ? files["files"].map((file) => file.filename)
+        : [];
 
-  const addData = [req.body.title, req.body.description, imgsrc];
-
-  if (!req.files) {
-    console.log("No file upload");
-  } else {
-    const sql = `INSERT INTO works (title, description, image) VALUES (?)`;
-
-    db.query(sql, [addData], function (err, result) {
-      if (err) throw err;
-      res.json(result);
-      console.log("file uploaded");
-    });
+      const createWork = await Work.create({
+        title,
+        description: content,
+        image: multipleImg
+      });
+      res.status(201).json({
+        message: "Work entry created successfully",
+        work: createWork
+      });
+    } catch (error) {
+      console.error("Error creating Work entry:", error);
+      res.status(500).json({ error: "Failed to create Work entry" });
+    }
   }
-});
+);
 
-// all work
-route.get("/work", (req, res) => {
-  const sql = `SELECT * FROM works`;
 
-  db.query(sql, (err, result) => {
-    if (err) throw err;
-    res.json(result);
-  });
-});
+// Update data
+route.post(
+  "/updatework",
+  upload.fields([{ name: "files" }]),
+  async (req, res) => {
+    const { id, title, content, files } = req.body;
 
-// Edit work
-route.post("/updatework/:id", upload.array("files"), (req, res) => {
-  const imgsrc = JSON.stringify(req.files.map((file) => file.filename));
-  const addData = [req.body.title, req.body.description, imgsrc];
+    try {
+      const [updatedRows, updatedData] = await Work.update(
+        {
+          title,
+          description:content,
+          image: files
+        },
+        {
+          where: { id: id }
+        }
+      );
 
-  if (req.files.length > 0) {
-    const sql = `UPDATE works SET title='${req.body.title}',description='${req.body.description}',image='${imgsrc}' WHERE id = ${req.params.id}`;
-    db.query(sql, (err, result) => {
-      if (err) throw err;
-      res.json(result);
-      console.log(result);
-      console.log("file uploaded");
-    });
-  } else {
-    const sql = `UPDATE works SET title='${req.body.title}',description='${req.body.description}' WHERE id = ${req.params.id}`;
-    db.query(sql, (err, result) => {
-      if (err) throw err;
-      res.json(result);
-      console.log(result);
-      console.log("no file uploaded");
-    });
+      if (updatedRows > 0) {
+        console.log("Update successful:", updatedData);
+        console.log("Home Updated:", updatedData);
+      } else {
+        console.log("No records were updated.");
+      }
+
+      res.status(201).json({
+        message: "Home Updated successfully",
+        updateWork: updatedData
+      });
+    } catch (error) {
+      console.error("Error updating home entry:", error);
+      res.status(500).json({ error: "Failed to update home entry" });
+    }
   }
-});
+);
 
-// Delete work
-route.post("/deletework/:id", (req, res) => {
-  const sql = `DELETE FROM works WHERE id = ${req.params.id}`;
 
-  db.query(sql, function (err, result) {
-    if (err) throw err;
-    res.json(result);
-  });
+// delete data
+route.post("/deletework", async (req, res) => {
+  try {
+    const { id } = req.body; // Make sure id is sent as { id: yourIdValue }
+    
+    // Use the id in the where condition
+    const data = await Work.destroy({
+      where: { id : id }
+    });
+
+    if (data > 0) {
+      console.log(`Record with id ${id} deleted successfully.`);
+      res.status(200).json({ message: `Record with id ${id} deleted successfully.` });
+    } else {
+      console.log(`No record found with id ${id}. Nothing deleted.`);
+      res.status(404).json({ error: `No record found with id ${id}. Nothing deleted.` });
+    }
+  } catch (error) {
+    console.error('Error deleting record:', error);
+    res.status(500).json({ error: 'Failed to delete record.' });
+  }
 });
 
 module.exports = route;

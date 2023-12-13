@@ -1,73 +1,109 @@
 const express = require("express");
 const multer = require("multer");
 const route = express.Router();
-const db = require("../../config/dbConnection");
 const upload = require("../../middlewear/imageUploader");
+const People = require("../../models/People");
 
-
-
+// all People
+route.get("/people", async (req, res) => {
+  const peopleData = await People.findAll()
+    .then((data) => {
+      // console.log("users:", users);
+      res.status(201).json({ message: "People data get successfully", data });
+    })
+    .catch((error) => {
+      console.log("Error getting", error);
+    });
+});
 // create People
-route.post("/createpeople", upload.single("file"), async (req, res) => {
+route.post(
+  "/createpeople",
+  upload.fields([{ name: "file" }, { name: "files" }]),
+  async (req, res) => {
+    const { name, designation, description } = req.body;
+    const files = req.files;
 
-    const addData = [
-      req.body.name,
-      req.body.designation,
-      req.file.filename
-    ];
-  
-  
-    if (!req.file) {
-      console.log("No file upload");
-    } else {
-      const sql = `INSERT INTO people (name, designation, image) VALUES (?)`;
-  
-      db.query(sql, [addData], function (err, result) {
-        if (err) throw err;
-        res.json(result);
-        console.log("file uploaded");
+    try {
+      const profileImg = files["file"] ? req.files["file"][0].filename : null;
+      const projectImg = Array.isArray(files["files"])
+        ? files["files"].map((file) => file.filename)
+        : [];
+
+      const data = await People.create({
+        name,
+        designation,
+        description,
+        profileImage: profileImg,
+        projectImage: projectImg
       });
+      console.log("People entry created:", data);
+      res.status(201).json({ message: "People Created successfully", data });
+    } catch (error) {
+      console.error("Error creating People entry:", error);
+      res.status(500).json({ error: "Failed to create People entry" });
     }
-  });
-  
-  // all People
-  route.get("/people", (req, res) => {
-    const sql = `SELECT * FROM people`;
-  
-    db.query(sql, (err, result) => {
-      if (err) throw err;
-      res.json(result);
-    });
-  });
-  
-  // Edit People
-  route.post("/updatepeople/:id", upload.single("file"), async(req, res) => {
-  
-    const addData = [
-      req.body.name,
-      req.body.designation,
-      req.body.file || req.file.filename
-    ];
-    
-      const sql = `UPDATE people SET name='${req.body.name}', designation='${req.body.designation}', image='${req.body.file || req.file.filename}' WHERE id = ${req.params.id}`;
-      db.query(sql, [addData], function (err, result) {
-        if (err) throw err;
-        res.json(result);
-        console.log(result);
-        console.log("file uploaded");
-      });
-  
-  });
-  
-  // Delete People
-  route.post("/deletepeople/:id", (req, res) => {
-    const sql = `DELETE FROM people WHERE id = ${req.params.id}`;
-  
-    db.query(sql, function (err, result) {
-      if (err) throw err;
-      res.json(result);
-    });
-  });
-  
+  }
+);
 
+// Edit People
+route.post(
+  "/updatepeople/",
+  upload.fields([{ name: "file" }, { name: "files" }]),
+  async (req, res) => {
+    const { id, name, designation, description, file, files } = req.body;
+    try {
+      const [updatedRows, updatedData] = await People.update(
+        {
+          name,
+          designation,
+          description,
+          profileImage: file,
+          projectImage: files
+        },
+        {
+          where: { id: id }
+        }
+      );
+
+      if (updatedRows > 0) {
+        console.log("Update successful:", updatedData);
+        console.log("People Updated:", updatedData);
+      } else {
+        console.log("No records were updated.");
+      }
+
+      res.status(201).json({
+        message: "People Updated successfully",
+        updateHome: updatedData
+      });
+    } catch (error) {
+      console.error("Error updating People entry:", error);
+      res.status(500).json({ error: "Failed to update People entry" });
+    }
+  }
+);
+
+// Delete People
+route.post("/deletepeople/", async (req, res) => {
+  try {
+    const { id } = req.body; // Make sure id is sent as { id: yourIdValue }
+    
+    // Use the id in the where condition
+    const data = await People.destroy({
+      where: { id : id }
+    });
+
+    if (data > 0) {
+      console.log(`Record with id ${id} deleted successfully.`);
+      res.status(200).json({ message: `Record with id ${id} deleted successfully.` });
+    } else {
+      console.log(`No record found with id ${id}. Nothing deleted.`);
+      res.status(404).json({ error: `No record found with id ${id}. Nothing deleted.` });
+    }
+  } catch (error) {
+    console.error('Error deleting record:', error);
+    res.status(500).json({ error: 'Failed to delete record.' });
+  }
+});
 
 module.exports = route;

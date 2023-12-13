@@ -7,6 +7,7 @@ const blogRoutes = require("./blog")
 const peopleRoutes = require("./people")
 const careerRoutes = require("./career")
 const workRoutes = require("./work")
+const pageBGRoutes = require("./pageBG")
 
 route.use("/", authRoutes);
 route.use("/", userRoutes);
@@ -15,10 +16,9 @@ route.use("/", blogRoutes);
 route.use("/", peopleRoutes);
 route.use("/", careerRoutes);
 route.use("/", workRoutes);
+route.use("/", pageBGRoutes);
 
 
-// route.use("/", (req, res) => {
-//   res.json("hello api");
-// });
+
 
 module.exports = route;
